@@ -1,52 +1,59 @@
-# Prerequisites
-*.d
+## Build results
+bin/
+obj/
+out/
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+## User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
 
-# Linker output
-*.ilk
-*.map
-*.exp
+## Auto-generated files
+*.generated.cs
 
-# Precompiled Headers
-*.gch
-*.pch
+## Rider / VS Code / VS for Mac
+.idea/
+.vscode/
+*.code-workspace
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+## ASP.NET
+wwwroot/
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+## Dotnet-specific
+project.lock.json
+project.fragment.lock.json
+artifacts/
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+# Logs
+*.log
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+*.nuspec
+*.psmdcp
+.nuget/
+
+# VS for Mac
+*.pidb
+*.userprefs
+
+# Others
+_ReSharper*/
+*.bak
+*.tmp
+*.cache
+*.mdb
+*.dbmdl
+*.sql
+*.sqlite
+
+# JetBrains Rider
+.idea/
+*.sln.iml
