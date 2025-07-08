@@ -5,12 +5,14 @@ using ECommerceSystem.Logic;
 
 class Program
 {
+    // create a static instance of the ECommerce system
     static ECommerceSystem.Logic.ECommerceSystem ecommerce = new();
 
     static void Main()
     {
         bool running = true;
 
+        // application main loop: shows menu and handles user input
         while (running)
         {
             Console.WriteLine("\n--- E-Commerce System ---");
@@ -19,54 +21,48 @@ class Program
             Console.WriteLine("3. Place Order");
             Console.WriteLine("4. Generate Invoice");
             Console.WriteLine("5. Search Product");
-            Console.WriteLine("6. View All Products"); 
+            Console.WriteLine("6. View All Products");
             Console.WriteLine("7. List Orders by Customer");
             Console.WriteLine("8. Save Data");
             Console.WriteLine("9. Load Data");
             Console.WriteLine("0. Exit");
             Console.Write("Selection: ");
 
+            // handle menu selection
             switch (Console.ReadLine())
             {
-            case "1":
-                AddProduct();
-                break;
-            case "2":
-                RegisterCustomer();
-                break;
-            case "3":
-                PlaceOrder();
-                break;
-            case "4":
-                GenerateInvoice();
-                break;
-            case "5":
-                SearchProduct();
-                break;
-            case "6":
-                ViewAllProducts();
-                break;
-            case "7":
-                ListOrders();
-                break;
-            case "8":
-                ecommerce.SaveData("data.json");
-                Console.WriteLine(">> Data saved.");
-                break;
-            case "9":
-                ecommerce.LoadData("data.json");
-                Console.WriteLine(">> Data loaded.");
-                break;
-            case "0":
-                running = false;
-                break;
-            default:
-                Console.WriteLine("[Error] Invalid choice. Please try again.");
-                break;
+                case "1":
+                    AddProduct(); break;
+                case "2":
+                    RegisterCustomer(); break;
+                case "3":
+                    PlaceOrder(); break;
+                case "4":
+                    GenerateInvoice(); break;
+                case "5":
+                    SearchProduct(); break;
+                case "6":
+                    ViewAllProducts(); break;
+                case "7":
+                    ListOrders(); break;
+                case "8":
+                    ecommerce.SaveData("data.json");
+                    Console.WriteLine(">> Data saved.");
+                    break;
+                case "9":
+                    ecommerce.LoadData("data.json");
+                    Console.WriteLine(">> Data loaded.");
+                    break;
+                case "0":
+                    running = false; break;
+                default:
+                    Console.WriteLine("[Error] Invalid choice. Please try again.");
+                    break;
             }
         }
     }
 
+    // prompt user for product info and add it to inventory
     static void AddProduct()
     {
         Console.WriteLine("\n--- Add New Product ---");
@@ -77,7 +73,7 @@ class Program
         Console.Write("Category: ");
         string category = (Console.ReadLine() ?? string.Empty).Trim();
 
-
+        // validate stock input
         int stock;
         while (true)
         {
@@ -87,6 +83,7 @@ class Program
             Console.WriteLine("[Error] Please enter a non-negative number for stock.");
         }
 
+        // validate price input
         decimal price;
         while (true)
         {
@@ -96,14 +93,12 @@ class Program
             Console.WriteLine("[Error] Please enter a valid, non-negative price.");
         }
 
+        // add product to the system
         ecommerce.AddProduct(new Product(name, category, stock, price));
         Console.WriteLine($"\n✅ Product '{name}' added successfully!");
-        Console.WriteLine($"   > Category: {category}");
-        Console.WriteLine($"   > Stock: {stock}");
-        Console.WriteLine($"   > Price: ${price:F2}");
     }
 
-
+    // register a new customer by name
     static void RegisterCustomer()
     {
         Console.WriteLine("\n--- Register New Customer ---");
@@ -121,10 +116,9 @@ class Program
         ecommerce.RegisterCustomer(customer);
 
         Console.WriteLine($"\n✅ Customer registered successfully!");
-        Console.WriteLine($"   > Name: {customer.Name}");
-        Console.WriteLine($"   > ID: {customer.Id}");
     }
 
+    // create an order for a given customer
     static void PlaceOrder()
     {
         Console.WriteLine("\n--- Place a New Order ---");
@@ -134,7 +128,7 @@ class Program
 
         Customer customer = null;
 
-        // try to find customer by ID or name
+        // try to locate customer by ID or name
         if (Guid.TryParse(input, out Guid id))
         {
             customer = ecommerce.Customers.Find(c => c.Id == id);
@@ -146,7 +140,7 @@ class Program
 
             if (matches.Count == 0)
             {
-                Console.WriteLine("[Error] No customer found with that name.");
+                Console.WriteLine("[Error] No customer found.");
                 return;
             }
             else if (matches.Count == 1)
@@ -179,10 +173,9 @@ class Program
             return;
         }
 
-        Console.WriteLine($"\nCustomer: {customer.Name} (ID: {customer.Id})");
-        Console.WriteLine("Enter products for the order. Type 'done' to finish.\n");
-
+        // collect product names and quantities
         var productOrders = new Dictionary<string, int>();
+        Console.WriteLine("Enter products for the order. Type 'done' to finish.\n");
 
         while (true)
         {
@@ -223,7 +216,7 @@ class Program
             Console.Write("Quantity: ");
             if (!int.TryParse(Console.ReadLine(), out int qty) || qty <= 0)
             {
-                Console.WriteLine("[Error] Invalid quantity. Try again.");
+                Console.WriteLine("[Error] Invalid quantity.");
                 continue;
             }
 
@@ -235,34 +228,26 @@ class Program
 
         if (productOrders.Count == 0)
         {
-            Console.WriteLine("[Error] No products were added to the order.");
+            Console.WriteLine("[Error] No products were added.");
             return;
         }
 
+        // attempt to place the order
         try
         {
             var order = ecommerce.PlaceOrder(customer.Id, productOrders);
             Console.WriteLine($"\n✅ Order placed successfully!");
-            Console.WriteLine($"   > Order ID: {order.OrderId}");
-            Console.WriteLine($"   > Date: {order.Date}");
 
+            // show summary
             Console.WriteLine("\n--- Order Summary ---");
-            Console.WriteLine($"{"Product",-25} {"Qty",5} {"Unit Price",12} {"Total",12}");
-            Console.WriteLine(new string('-', 60));
-
             decimal total = 0;
             foreach (var item in order.Items)
             {
-                string name = item.Key.Name;
-                int qty = item.Value;
-                decimal unitPrice = item.Key.Price;
-                decimal lineTotal = qty * unitPrice;
+                decimal lineTotal = item.Value * item.Key.Price;
                 total += lineTotal;
-
-                Console.WriteLine($"{name,-25} {qty,5} ${unitPrice,12:F2} ${lineTotal,12:F2}");
+                Console.WriteLine($"{item.Key.Name,-25} {item.Value,5} ${item.Key.Price,12:F2} ${lineTotal,12:F2}");
             }
 
-            Console.WriteLine(new string('-', 60));
             Console.WriteLine($"{"TOTAL:",44} ${total,12:F2}");
         }
         catch (Exception ex)
@@ -271,7 +256,7 @@ class Program
         }
     }
 
-
+    // display invoice for an order
     static void GenerateInvoice()
     {
         Console.WriteLine("\n=== 🧾 Generate Invoice ===");
@@ -290,30 +275,24 @@ class Program
             return;
         }
 
+        // display order invoice
         Console.WriteLine("\n--- Invoice Summary ---");
         Console.WriteLine($"Order ID : {order.OrderId}");
         Console.WriteLine($"Customer : {order.Customer.Name}");
         Console.WriteLine($"Date     : {order.Date}");
-        Console.WriteLine(new string('-', 60));
-        Console.WriteLine($"{"Product",-25} {"Qty",5} {"Unit Price",12} {"Total",12}");
-        Console.WriteLine(new string('-', 60));
 
         decimal total = 0;
         foreach (var item in order.Items)
         {
-            string productName = item.Key.Name;
-            int quantity = item.Value;
-            decimal unitPrice = item.Key.Price;
-            decimal lineTotal = unitPrice * quantity;
+            decimal lineTotal = item.Value * item.Key.Price;
             total += lineTotal;
-
-            Console.WriteLine($"{productName,-25} {quantity,5} ${unitPrice,12:F2} ${lineTotal,12:F2}");
+            Console.WriteLine($"{item.Key.Name,-25} {item.Value,5} ${item.Key.Price,12:F2} ${lineTotal,12:F2}");
         }
 
-        Console.WriteLine(new string('-', 60));
         Console.WriteLine($"{"TOTAL:",44} ${total,12:F2}");
     }
 
+    // search for products by name or category
     static void SearchProduct()
     {
         Console.WriteLine("\n--- Product Search ---");
@@ -322,24 +301,18 @@ class Program
         string keyword = (Console.ReadLine() ?? string.Empty).Trim();
 
         var results = ecommerce.SearchProducts(keyword);
-
         if (results.Count == 0)
         {
-            Console.WriteLine("\nNo matching products found.");
+            Console.WriteLine("No matching products found.");
             return;
         }
 
         Console.WriteLine($"\n🔎 Found {results.Count} product{(results.Count > 1 ? "s" : "")}:");
-        Console.WriteLine(new string('-', 60));
-        Console.WriteLine($"{"Name",-20} {"Category",-15} {"Price",10} {"Stock",8}");
-        Console.WriteLine(new string('-', 60));
-
         foreach (var p in results)
             Console.WriteLine($"{p.Name,-20} {p.Category,-15} ${p.Price,10:F2} {p.Stock,8}");
-
-        Console.WriteLine(new string('-', 60));
     }
 
+    // list all products in the system
     static void ViewAllProducts()
     {
         Console.WriteLine("\n--- All Available Products ---");
@@ -351,17 +324,11 @@ class Program
             return;
         }
 
-        Console.WriteLine($"Total Products: {products.Count}");
-        Console.WriteLine(new string('-', 60));
-        Console.WriteLine($"{"Name",-20} {"Category",-15} {"Price",10} {"Stock",8}");
-        Console.WriteLine(new string('-', 60));
-
         foreach (var p in products)
             Console.WriteLine($"{p.Name,-20} {p.Category,-15} ${p.Price,10:F2} {p.Stock,8}");
-
-        Console.WriteLine(new string('-', 60));
     }
 
+    // display all orders for a specific customer
     static void ListOrders()
     {
         Console.WriteLine("\n--- View Customer Orders ---");
@@ -374,22 +341,14 @@ class Program
         }
 
         var orders = ecommerce.GetOrdersByCustomer(id);
-
         if (orders.Count == 0)
         {
-            Console.WriteLine("\nNo orders found for this customer.");
+            Console.WriteLine("No orders found.");
             return;
         }
 
         Console.WriteLine($"\n🧾 {orders.Count} order{(orders.Count > 1 ? "s" : "")} found:");
-        Console.WriteLine(new string('-', 80));
-        Console.WriteLine($"{"Order ID",-42} {"Date",30}");
-        Console.WriteLine(new string('-', 80));
-
         foreach (var order in orders)
             Console.WriteLine($"{order.OrderId,-42} {order.Date,30}");
-
-        Console.WriteLine(new string('-', 80));
     }
-
 }
